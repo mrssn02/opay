@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role { USER ADMIN }
+enum LedgerType { CREDIT DEBIT }
+enum RequestStatus { PENDING APPROVED REJECTED }
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  wallet    Wallet?
+  createdAt DateTime @default(now())
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  balance   BigInt   @default(0) // rupiah, 1 = Rp1
+  user      User     @relation(fields: [userId], references: [id])
+  ledger    LedgerEntry[]
+}
+
+model LedgerEntry {
+  id        String   @id @default(cuid())
+  walletId  String
+  type      LedgerType
+  amount    BigInt
+  refType   String?
+  refId     String?
+  note      String?
+  createdAt DateTime @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+}
+
+model DepositAccount {
+  id          String  @id @default(cuid())
+  bankName    String
+  accountNo   String
+  accountName String
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model DepositRequest {
+  id          String @id @default(cuid())
+  userId      String
+  accountId   String
+  amount      BigInt
+  status      RequestStatus @default(PENDING)
+  proofUrl    String?
+  note        String?
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model WithdrawRequest {
+  id          String @id @default(cuid())
+  userId      String
+  amount      BigInt
+  bankName    String
+  accountNo   String
+  accountName String
+  status      RequestStatus @default(PENDING)
+  note        String?
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model AdminAuditLog {
+  id        String @id @default(cuid())
+  adminId   String
+  action    String
+  metaJson  String
+  createdAt DateTime @default(now())
+}

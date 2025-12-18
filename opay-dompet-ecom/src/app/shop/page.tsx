@@ -1,0 +1,1 @@
+export default function ShopPage(){return(<div className="card p-6"><h1 className="text-xl font-semibold">Shop (Demo)</h1><p className="mt-2 text-slate-600">Halaman e-commerce bisa kamu lanjutkan (produk, cart, checkout). Fokus template ini: sistem dompet + admin approval.</p></div>)}
