@@ -7,9 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role { USER ADMIN }
-enum LedgerType { CREDIT DEBIT }
-enum RequestStatus { PENDING APPROVED REJECTED }
+enum Role {
+  USER
+  ADMIN
+}
+
+enum LedgerType {
+  CREDIT
+  DEBIT
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
 
 model User {
   id        String   @id @default(cuid())
