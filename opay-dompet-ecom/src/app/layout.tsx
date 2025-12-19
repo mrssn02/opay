@@ -1,6 +1,6 @@
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
-import { WhatsAppCSButton } from "@/components/WhatsAppCSButton";
+import { WhatsAppCSButton } from "@/components/WhatsAppCSButton"
 
 export const metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME || "O-Pay",
