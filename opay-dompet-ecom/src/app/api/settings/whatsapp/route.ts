@@ -1,27 +1,12 @@
-export const dynamic = 'force-dynamic'
-
-import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { NextResponse } from 'next/server'
 
 export async function GET() {
-  try {
-    const setting = await prisma.setting.findUnique({
-      where: { key: 'whatsapp_cs' },
-    })
+  const setting = await prisma.setting.findUnique({
+    where: { key: 'WHATSAPP_CS' }
+  })
 
-    return NextResponse.json({
-      success: true,
-      value: setting?.value || '',
-    })
-  } catch (error) {
-    console.error('WhatsApp setting error:', error)
-
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Failed to load WhatsApp setting',
-      },
-      { status: 500 }
-    )
-  }
+  return NextResponse.json({
+    value: setting?.value || null
+  })
 }
