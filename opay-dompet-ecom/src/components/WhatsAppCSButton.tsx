@@ -1,22 +1,22 @@
-"use client";
-import useSWR from "swr";
+'use client'
 
-const fetcher = (u: string) => fetch(u).then((r) => r.json());
+import useSWR from 'swr'
 
-export function WhatsAppCSButton() {
-  const { data } = useSWR("/api/settings/whatsapp", fetcher);
-  const num: string = data?.number ?? "6280000000000";
-  const href = `https://wa.me/${num}?text=${encodeURIComponent("Halo CS O-Pay, saya butuh bantuan.")}`;
+const fetcher = (url: string) =>
+  fetch(url).then(res => res.json())
+
+export default function WhatsAppCSButton() {
+  const { data } = useSWR('/api/settings/whatsapp', fetcher)
+
+  if (!data?.value) return null
 
   return (
     <a
-      href={href}
+      href={`https://wa.me/${data.value}`}
       target="_blank"
-      rel="noreferrer"
-      className="fixed bottom-5 right-5 rounded-full px-4 py-3 shadow-lg bg-green-600 text-white font-medium"
-      aria-label="Customer Service WhatsApp"
+      className="fixed bottom-6 right-6 bg-green-500 text-white px-4 py-3 rounded-full shadow-lg"
     >
       CS WhatsApp
     </a>
-  );
+  )
 }
