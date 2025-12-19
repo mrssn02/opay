@@ -23,21 +23,30 @@ enum RequestStatus {
   REJECTED
 }
 
+enum SettingKey {
+  WHATSAPP_CS
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   password  String
   role      Role     @default(USER)
   wallet    Wallet?
+  deposits  DepositRequest[]
+  withdraws WithdrawRequest[]
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Wallet {
   id        String   @id @default(cuid())
   userId    String   @unique
-  balance   BigInt   @default(0) // rupiah, 1 = Rp1
+  balance   BigInt   @default(0)
   user      User     @relation(fields: [userId], references: [id])
   ledger    LedgerEntry[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model LedgerEntry {
@@ -59,7 +68,9 @@ model DepositAccount {
   accountNo   String
   accountName String
   isActive    Boolean @default(true)
+  deposits    DepositRequest[]
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model DepositRequest {
@@ -73,6 +84,9 @@ model DepositRequest {
   reviewedBy  String?
   reviewedAt  DateTime?
   createdAt   DateTime @default(now())
+
+  user    User           @relation(fields: [userId], references: [id])
+  account DepositAccount @relation(fields: [accountId], references: [id])
 }
 
 model WithdrawRequest {
@@ -87,11 +101,14 @@ model WithdrawRequest {
   reviewedBy  String?
   reviewedAt  DateTime?
   createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Setting {
-  key   String @id
-  value String
+  key       SettingKey @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 model AdminAuditLog {
