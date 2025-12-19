@@ -23,30 +23,21 @@ enum RequestStatus {
   REJECTED
 }
 
-enum SettingKey {
-  WHATSAPP_CS
-}
-
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   password  String
   role      Role     @default(USER)
   wallet    Wallet?
-  deposits  DepositRequest[]
-  withdraws WithdrawRequest[]
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Wallet {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  balance   BigInt   @default(0)
-  user      User     @relation(fields: [userId], references: [id])
-  ledger    LedgerEntry[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id      String   @id @default(cuid())
+  userId  String   @unique
+  balance BigInt   @default(0)
+  user    User     @relation(fields: [userId], references: [id])
+  ledger  LedgerEntry[]
 }
 
 model LedgerEntry {
@@ -54,8 +45,6 @@ model LedgerEntry {
   walletId  String
   type      LedgerType
   amount    BigInt
-  refType   String?
-  refId     String?
   note      String?
   createdAt DateTime @default(now())
 
@@ -63,58 +52,24 @@ model LedgerEntry {
 }
 
 model DepositAccount {
-  id          String  @id @default(cuid())
+  id          String   @id @default(cuid())
   bankName    String
   accountNo   String
   accountName String
-  isActive    Boolean @default(true)
-  deposits    DepositRequest[]
+  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 }
 
 model DepositRequest {
-  id          String @id @default(cuid())
-  userId      String
-  accountId   String
-  amount      BigInt
-  status      RequestStatus @default(PENDING)
-  proofUrl    String?
-  note        String?
-  reviewedBy  String?
-  reviewedAt  DateTime?
-  createdAt   DateTime @default(now())
-
-  user    User           @relation(fields: [userId], references: [id])
-  account DepositAccount @relation(fields: [accountId], references: [id])
-}
-
-model WithdrawRequest {
-  id          String @id @default(cuid())
-  userId      String
-  amount      BigInt
-  bankName    String
-  accountNo   String
-  accountName String
-  status      RequestStatus @default(PENDING)
-  note        String?
-  reviewedBy  String?
-  reviewedAt  DateTime?
-  createdAt   DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
+  id        String        @id @default(cuid())
+  userId    String
+  accountId String
+  amount    BigInt
+  status    RequestStatus @default(PENDING)
+  createdAt DateTime      @default(now())
 }
 
 model Setting {
-  key       SettingKey @id
-  value     String
-  updatedAt DateTime @updatedAt
-}
-
-model AdminAuditLog {
-  id        String @id @default(cuid())
-  adminId   String
-  action    String
-  metaJson  String
-  createdAt DateTime @default(now())
+  key   String @id
+  value String
 }
