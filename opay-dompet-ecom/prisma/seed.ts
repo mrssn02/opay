@@ -1,46 +1,41 @@
-import bcrypt from "bcrypt";
-import { PrismaClient } from "@prisma/client";
+import bcrypt from 'bcryptjs'
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 async function main() {
-  const adminEmail = "admin@opay.local";
-  const adminPass = "admin123";
-
-  const hash = await bcrypt.hash(adminPass, 10);
+  const adminPassword = await bcrypt.hash('admin123', 10)
 
   await prisma.user.upsert({
-    where: { email: adminEmail },
+    where: { email: 'admin@opay.local' },
     update: {},
     create: {
-      email: adminEmail,
-      password: hash,
-      role: "ADMIN",
-      wallet: { create: {} },
-    },
-  });
+      email: 'admin@opay.local',
+      password: adminPassword,
+      role: 'ADMIN',
+      wallet: {
+        create: {}
+      }
+    }
+  })
 
   await prisma.setting.upsert({
-    where: { key: "whatsapp_cs_number" },
-    update: {},
-    create: { key: "whatsapp_cs_number", value: "6280000000000" },
-  });
+    where: { key: 'WHATSAPP_CS' },
+    update: { value: '628123456789' },
+    create: {
+      key: 'WHATSAPP_CS',
+      value: '628123456789'
+    }
+  })
 
-  const existingAcc = await prisma.depositAccount.findFirst();
-  if (!existingAcc) {
-    await prisma.depositAccount.createMany({
-      data: [
-        { bankName: "BCA", accountNo: "1234567890", accountName: "O-Pay Official", isActive: true },
-        { bankName: "Mandiri", accountNo: "0987654321", accountName: "O-Pay Official", isActive: true },
-      ],
-    });
-  }
+  console.log('✅ Seed completed')
 }
 
 main()
-  .then(() => prisma.$disconnect())
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
+  .catch(e => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
