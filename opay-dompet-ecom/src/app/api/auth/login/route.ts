@@ -1,28 +1,48 @@
-import { NextResponse } from "next/server";
-import bcrypt from "bcrypt";
-import { prisma } from "@/lib/prisma";
-import { signSession } from "@/lib/jwt";
+import { NextResponse } from 'next/server'
+import bcrypt from 'bcryptjs'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(req: Request) {
-  const { email, password } = await req.json().catch(() => ({}));
+  try {
+    const { email, password } = await req.json()
 
-  if (!email || !password) return NextResponse.json({ error: "Input tidak valid" }, { status: 400 });
+    if (!email || !password) {
+      return NextResponse.json(
+        { message: 'Email dan password wajib diisi' },
+        { status: 400 }
+      )
+    }
 
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return NextResponse.json({ error: "Email / password salah" }, { status: 401 });
+    const user = await prisma.user.findUnique({
+      where: { email },
+    })
 
-  const ok = await bcrypt.compare(password, user.password);
-  if (!ok) return NextResponse.json({ error: "Email / password salah" }, { status: 401 });
+    if (!user) {
+      return NextResponse.json(
+        { message: 'Email atau password salah' },
+        { status: 401 }
+      )
+    }
 
-  const token = signSession({ userId: user.id, role: user.role });
+    const valid = await bcrypt.compare(password, user.password)
 
-  const res = NextResponse.json({ ok: true });
-  res.cookies.set("session", token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7,
-  });
-  return res;
+    if (!valid) {
+      return NextResponse.json(
+        { message: 'Email atau password salah' },
+        { status: 401 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      userId: user.id,
+      role: user.role,
+    })
+  } catch (error) {
+    console.error(error)
+    return NextResponse.json(
+      { message: 'Login gagal' },
+      { status: 500 }
+    )
+  }
 }
