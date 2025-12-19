@@ -1,27 +1,49 @@
 import { NextResponse } from "next/server";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
-  const { email, password } = await req.json().catch(() => ({}));
+  try {
+    const { email, password } = await req.json();
 
-  if (!email || typeof email !== "string" || !password || typeof password !== "string" || password.length < 6) {
-    return NextResponse.json({ error: "Input tidak valid" }, { status: 400 });
+    if (!email || !password) {
+      return NextResponse.json(
+        { message: "Email dan password wajib diisi" },
+        { status: 400 }
+      );
+    }
+
+    // cek user sudah ada
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { message: "Email sudah terdaftar" },
+        { status: 400 }
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        role: "USER",
+      },
+    });
+
+    return NextResponse.json(
+      { message: "Registrasi berhasil" },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("REGISTER ERROR:", error);
+    return NextResponse.json(
+      { message: "Gagal daftar" },
+      { status: 500 }
+    );
   }
-
-  const exists = await prisma.user.findUnique({ where: { email } });
-  if (exists) return NextResponse.json({ error: "Email sudah terdaftar" }, { status: 409 });
-
-  const hash = await bcrypt.hash(password, 10);
-
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password: hash,
-      wallet: { create: {} },
-    },
-    select: { id: true, email: true },
-  });
-
-  return NextResponse.json({ user });
 }
